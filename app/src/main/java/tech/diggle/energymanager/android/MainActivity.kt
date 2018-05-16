@@ -55,7 +55,15 @@ class MainActivity : DaggerAppCompatActivity(), NavigationView.OnNavigationItemS
                 }, onError = {
                     Log.d("MainActivity", it.message)
                 }))
+
+        if (savedInstanceState == null) {
+            val fragment: Fragment = HomeFragment()
+            supportFragmentManager.beginTransaction()
+                    .replace(R.id.content_frame, fragment)
+                    .commit()
+        }
     }
+
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentDispatchingAndroidInjector
 
     override fun onBackPressed() {

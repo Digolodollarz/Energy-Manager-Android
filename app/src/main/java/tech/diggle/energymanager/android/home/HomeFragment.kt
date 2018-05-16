@@ -8,6 +8,10 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.DefaultItemAnimator
+import android.support.v7.widget.DividerItemDecoration
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +27,7 @@ import butterknife.OnClick;
 import butterknife.Unbinder
 import dagger.android.AndroidInjection;
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.android.synthetic.main.fragment_home_fragment.*
 import tech.diggle.energymanager.android.AndroidApp
 import timber.log.Timber;
 
@@ -30,7 +35,10 @@ import timber.log.Timber;
  * A simple [Fragment] subclass.
  *
  */
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), GadgetListAdapter.RecyclerViewClickListener {
+    override fun onClick(view: View, position: Int) {
+        Timber.d("Wat")
+    }
 
     @Inject
     lateinit var gadgetService: GadgetService
@@ -38,8 +46,9 @@ class HomeFragment : Fragment() {
     @Inject
     lateinit var gadgetViewModelFactory: GadgetViewModelFactory
 
-    @BindView(R.id.fragment_hello)
-    lateinit var fragmentHelloTextView: TextView
+//    @BindView(R.id.rvGadgets) lateinit var rvGadgets: RecyclerView
+    private lateinit var mAdapter: GadgetListAdapter
+    private var gadgets = ArrayList<Gadget>()
 
     lateinit var unbinder: Unbinder
     lateinit var viewModel: GadgetViewModel
@@ -53,15 +62,23 @@ class HomeFragment : Fragment() {
         viewModel = ViewModelProviders.of(this, gadgetViewModelFactory)
                 .get(GadgetViewModel::class.java)
 
-        viewModel.gadgets.observe(this, Observer { data -> fragmentHelloTextView.text = data!!.name  })
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        sayFragmentHello()
+        mAdapter = GadgetListAdapter(gadgets, context!!, this)
+        rvGadgets.layoutManager = LinearLayoutManager(context)
+        rvGadgets.itemAnimator = DefaultItemAnimator()
+        rvGadgets.adapter = mAdapter
+        viewModel.gadgets.observe(this, Observer { data ->
+            if (data != null) {
+                mAdapter.gadgets = data
+                mAdapter.notifyDataSetChanged()
+            }
+        })
+        getGadgets()
     }
 
     override fun onAttach(context: Context) {
@@ -74,9 +91,5 @@ class HomeFragment : Fragment() {
         unbinder.unbind()
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun sayFragmentHello() {
-        fragmentHelloTextView.text = "THis Is Cheff"
-        viewModel.loadGadgets()
-    }
+    private fun getGadgets() = viewModel.loadGadgets()
 }

@@ -5,5 +5,5 @@ import javax.inject.Inject
 
 class GadgetService @Inject constructor(var gadgetRepository: GadgetRepository) {
 
-    fun execute() = gadgetRepository.getGreeting()
+    fun execute() = gadgetRepository.getGadgets()
 }

@@ -6,9 +6,10 @@ import android.util.Log
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import tech.diggle.energymanager.android.util.SchedulerProvider
+import timber.log.Timber
 
 class GadgetViewModel(val service: GadgetService, val schedulerProvider: SchedulerProvider) : ViewModel() {
-    val gadgets: MutableLiveData<Gadget> = MutableLiveData()
+    var gadgets: MutableLiveData<ArrayList<Gadget>> = MutableLiveData()
     val disposables = CompositeDisposable()
     val TAG = "tech.diggle.GVM"
 
@@ -16,15 +17,15 @@ class GadgetViewModel(val service: GadgetService, val schedulerProvider: Schedul
         super.onCleared()
     }
 
-    fun gadgets() = gadgets
 
     fun loadGadgets() {
         disposables.add(service.execute()
                 .subscribeOn(schedulerProvider.backgroundScheduler)
                 .observeOn(schedulerProvider.foregroundScheduler)
                 .doOnSubscribe { _ -> Log.d(TAG, "Getting them gadgets") }
-                .subscribe({ _ ->
-                    gadgets.value = Gadget("Stoff", "le im", 0.3)
+                .subscribe({ _gadgets ->
+                    gadgets.value = _gadgets
+                    Timber.d("Gotten em")
                 }, { error -> Log.e(TAG, "loadGadgets", error) }))
     }
 }
